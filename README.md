@@ -1,2 +1,2 @@
 # Hello
-This is a repository of CCOPSYSL Programs
+This is a repository of Operating Systems Subject (CCOPSYSL) Programs
