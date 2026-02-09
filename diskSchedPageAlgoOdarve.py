@@ -22,7 +22,6 @@ class MainApp:
         self.root.geometry(f"{width}x{height}+{x}+{y}")
         self.root.resizable(True, True)
         self.root.overrideredirect(False)
-        self.root.attributes('-toolwindow', True)
         
     def create_main_buttons(self):
         frame = ttk.Frame(self.root, padding="20")
@@ -65,7 +64,6 @@ class PageReplacementWindow:
         y = (screen_height - height) // 2
         self.window.geometry(f"{width}x{height}+{x}+{y}")
         self.window.resizable(True, True)
-        self.window.attributes('-toolwindow', True)
         
     def create_widgets(self):
         input_frame = ttk.Frame(self.window, padding="10")
@@ -231,7 +229,6 @@ class DiskSchedulingWindow:
         y = (screen_height - height) // 2
         self.window.geometry(f"{width}x{height}+{x}+{y}")
         self.window.resizable(True, True)
-        self.window.attributes('-toolwindow', True)
         
     def create_widgets(self):
         input_frame = ttk.Frame(self.window, padding="10")
