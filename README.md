@@ -17,8 +17,6 @@ Programs and implementations created during the Operating Systems (CCOPSYSL) cou
   - [CPU Scheduling](#cpu-scheduling)
 - [Project Structure](#project-structure)
 - [Technologies Used](#technologies-used)
-- [Authors](#authors)
-- [Course Information](#course-information)
 - [Acknowledgments](#acknowledgments)
 
 ## About
@@ -202,19 +200,6 @@ CCOPSYSL/
   - numpy: Numerical computations
 - **Java**: Implementation of Round Robin algorithm
 - **Git**: Version control
-
-## Authors
-
-- **Odarve, R.** - Primary Developer (Disk Scheduling & Page Replacement GUI)
-- **Renaire** - Contributor (Round Robin CPU Scheduling)
-
-## Course Information
-
-**Course**: CCOPSYSL (Operating Systems)  
-**Academic Year**: 2025-2026  
-**Purpose**: Programming assignments demonstrating understanding of OS algorithms
-
-These programs were created as coursework to fulfill the requirements of the Operating Systems course, demonstrating practical implementation and understanding of fundamental OS concepts.
 
 ## Acknowledgments
 
