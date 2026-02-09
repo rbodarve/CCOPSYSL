@@ -15,11 +15,12 @@ class MainApp:
     def setup_main_window(self):
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
-        width = 400
-        height = 300
+        width = min(500, screen_width - 100)
+        height = min(400, screen_height - 100)
         x = (screen_width - width) // 2
         y = (screen_height - height) // 2        
         self.root.geometry(f"{width}x{height}+{x}+{y}")
+        self.root.minsize(400, 300)
         self.root.resizable(True, True)
         self.root.overrideredirect(False)
         
@@ -58,43 +59,65 @@ class PageReplacementWindow:
     def setup_window(self):
         screen_width = self.window.winfo_screenwidth()
         screen_height = self.window.winfo_screenheight()
-        width = 600
-        height = 400
+        width = min(800, screen_width - 100)
+        height = min(600, screen_height - 100)
         x = (screen_width - width) // 2
         y = (screen_height - height) // 2
         self.window.geometry(f"{width}x{height}+{x}+{y}")
+        self.window.minsize(600, 450)
         self.window.resizable(True, True)
         
     def create_widgets(self):
-        input_frame = ttk.Frame(self.window, padding="10")
-        input_frame.pack(fill=tk.X)
-        ttk.Label(input_frame, text="Number of Page Frames:").pack()
+        main_container = ttk.Frame(self.window)
+        main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        input_frame = ttk.LabelFrame(main_container, text="Input Parameters", padding="10")
+        input_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(input_frame, text="Number of Page Frames:").grid(row=0, column=0, sticky=tk.W, pady=5)
         self.frames_var = tk.StringVar()
-        self.frames_entry = ttk.Entry(input_frame, textvariable=self.frames_var)
-        self.frames_entry.pack()
-        ttk.Label(input_frame, text="Length of Reference String:").pack()
+        self.frames_entry = ttk.Entry(input_frame, textvariable=self.frames_var, width=15)
+        self.frames_entry.grid(row=0, column=1, sticky=tk.W, pady=5, padx=5)
+        
+        ttk.Label(input_frame, text="Length of Reference String:").grid(row=1, column=0, sticky=tk.W, pady=5)
         self.length_var = tk.StringVar()
-        self.length_entry = ttk.Entry(input_frame, textvariable=self.length_var)
-        self.length_entry.pack()
+        self.length_entry = ttk.Entry(input_frame, textvariable=self.length_var, width=15)
+        self.length_entry.grid(row=1, column=1, sticky=tk.W, pady=5, padx=5)
+        
         self.confirm_btn = ttk.Button(input_frame, text="Confirm", 
             command=self.on_confirm, state=tk.DISABLED)
-        self.confirm_btn.pack(pady=10)
-        self.ref_string_frame = ttk.Frame(self.window, padding="10")
-        self.ref_string_frame.pack(fill=tk.X)
-        algo_frame = ttk.Frame(self.window, padding="10")
-        algo_frame.pack(fill=tk.X)
+        self.confirm_btn.grid(row=2, column=0, columnspan=2, pady=10)
+        
+        ref_container = ttk.LabelFrame(main_container, text="Reference String", padding="10")
+        ref_container.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        
+        self.ref_canvas = tk.Canvas(ref_container, height=80)
+        scrollbar = ttk.Scrollbar(ref_container, orient="horizontal", command=self.ref_canvas.xview)
+        self.ref_string_frame = ttk.Frame(self.ref_canvas)
+        
+        self.ref_canvas.create_window((0, 0), window=self.ref_string_frame, anchor="nw")
+        self.ref_canvas.configure(xscrollcommand=scrollbar.set)
+        
+        self.ref_canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+        algo_frame = ttk.LabelFrame(main_container, text="Select Algorithm", padding="10")
+        algo_frame.pack(fill=tk.X, pady=(0, 10))
         self.algo_var = tk.StringVar()
-        ttk.Radiobutton(algo_frame, text="FIFO", variable=self.algo_var, 
-                       value="FIFO").pack()
-        ttk.Radiobutton(algo_frame, text="LRU", variable=self.algo_var, 
-                       value="LRU").pack()
+        ttk.Radiobutton(algo_frame, text="FIFO (First In First Out)", variable=self.algo_var, 
+                       value="FIFO", command=self.validate_ref_string).pack(anchor=tk.W, pady=2)
+        ttk.Radiobutton(algo_frame, text="LRU (Least Recently Used)", variable=self.algo_var, 
+                       value="LRU", command=self.validate_ref_string).pack(anchor=tk.W, pady=2)
         ttk.Radiobutton(algo_frame, text="Optimal", variable=self.algo_var, 
-                       value="Optimal").pack()
-        self.calc_btn = ttk.Button(self.window, text="Calculate", 
+                       value="Optimal", command=self.validate_ref_string).pack(anchor=tk.W, pady=2)
+        
+        button_frame = ttk.Frame(main_container)
+        button_frame.pack(fill=tk.X, pady=(0, 10))
+        self.calc_btn = ttk.Button(button_frame, text="Calculate", 
                                  command=self.calculate, state=tk.DISABLED)
-        self.calc_btn.pack(pady=10)
-        nav_frame = ttk.Frame(self.window, padding="10")
-        nav_frame.pack(side=tk.BOTTOM, fill=tk.X)
+        self.calc_btn.pack()
+        
+        nav_frame = ttk.Frame(main_container)
+        nav_frame.pack(fill=tk.X)
         ttk.Button(nav_frame, text="Back", 
                   command=lambda: self.main_app.confirm_exit(self.window)).pack(side=tk.LEFT)
         ttk.Button(nav_frame, text="Home", 
@@ -120,21 +143,28 @@ class PageReplacementWindow:
         length = int(self.length_var.get())
         for i in range(length):
             entry = ttk.Entry(self.ref_string_frame, width=5)
-            entry.pack(side=tk.LEFT, padx=2)
+            entry.grid(row=0, column=i, padx=2, pady=5)
             entry.bind('<KeyRelease>', self.validate_ref_string)
             self.ref_entries.append(entry)
+        self.ref_string_frame.update_idletasks()
+        self.ref_canvas.configure(scrollregion=self.ref_canvas.bbox("all"))
             
-    def validate_ref_string(self, event):
+    def validate_ref_string(self, event=None):
+        if not hasattr(self, 'ref_entries'):
+            return
         valid = True
         ref_string = []
         for entry in self.ref_entries:
             value = entry.get().strip()
+            if value == "":
+                valid = False
+                break
             if value.isdigit() and 0 <= int(value) <= 9:
                 ref_string.append(int(value))
             else:
                 valid = False
                 break
-        if valid and self.algo_var.get():
+        if valid and len(ref_string) == len(self.ref_entries) and self.algo_var.get():
             self.calc_btn.config(state=tk.NORMAL)
         else:
             self.calc_btn.config(state=tk.DISABLED)
@@ -145,29 +175,44 @@ class PageReplacementWindow:
         algorithm = self.algo_var.get()
         result_window = tk.Toplevel(self.window)
         result_window.title(f"{algorithm} Page Replacement Results")
-        tree = ttk.Treeview(result_window, columns=('Step', 'Memory', 'Fault'), 
-            show='headings')
+        result_window.geometry("700x500")
+        
+        tree_frame = ttk.Frame(result_window)
+        tree_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        tree_scroll = ttk.Scrollbar(tree_frame)
+        tree_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        tree = ttk.Treeview(tree_frame, columns=('Step', 'Memory', 'Fault'), 
+            show='headings', yscrollcommand=tree_scroll.set)
+        tree_scroll.config(command=tree.yview)
+        
         tree.heading('Step', text='Step')
         tree.heading('Memory', text='Memory Frame')
         tree.heading('Fault', text='Page Fault')
+        tree.column('Step', width=80)
+        tree.column('Memory', width=400)
+        tree.column('Fault', width=100)
+        
         memory = [None] * frames
         faults = 0
         if algorithm == "FIFO":
-            frame_ages = [0] * frames 
-            current_time = 0
+            queue = []
             for i, page in enumerate(ref_string):
                 if page not in memory:
                     fault = True
                     if None in memory:
                         frame_index = memory.index(None)
+                        memory[frame_index] = page
+                        queue.append(page)
                     else:
-                        frame_index = frame_ages.index(min(frame_ages))
-                    memory[frame_index] = page
-                    frame_ages[frame_index] = current_time
+                        oldest_page = queue.pop(0)
+                        frame_index = memory.index(oldest_page)
+                        memory[frame_index] = page
+                        queue.append(page)
                     faults += 1
                 else:
                     fault = False
-                current_time += 1
                 tree.insert('', 'end', values=(i + 1, str(memory), 'Yes' if fault else 'No'))
         elif algorithm == "LRU":
             last_used = [0] * frames  
@@ -209,8 +254,13 @@ class PageReplacementWindow:
                 else:
                     fault = False
                 tree.insert('', 'end', values=(i + 1, str(memory), 'Yes' if fault else 'No'))
-        tree.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
-        ttk.Label(result_window, text=f"Total Page Faults: {faults}").pack(pady=5)
+        tree.pack(fill=tk.BOTH, expand=True)
+        
+        stats_frame = ttk.Frame(result_window)
+        stats_frame.pack(fill=tk.X, padx=10, pady=10)
+        ttk.Label(stats_frame, text=f"Total Page Faults: {faults}", font=('Arial', 12, 'bold')).pack(side=tk.LEFT)
+        hit_rate = ((len(ref_string) - faults) / len(ref_string)) * 100
+        ttk.Label(stats_frame, text=f"Hit Rate: {hit_rate:.2f}%", font=('Arial', 12)).pack(side=tk.RIGHT)
 
 class DiskSchedulingWindow:
     def __init__(self, main_app):
@@ -223,64 +273,93 @@ class DiskSchedulingWindow:
     def setup_window(self):
         screen_width = self.window.winfo_screenwidth()
         screen_height = self.window.winfo_screenheight()
-        width = 600
-        height = 400
+        width = min(900, screen_width - 100)
+        height = min(700, screen_height - 100)
         x = (screen_width - width) // 2
         y = (screen_height - height) // 2
         self.window.geometry(f"{width}x{height}+{x}+{y}")
+        self.window.minsize(700, 550)
         self.window.resizable(True, True)
         
     def create_widgets(self):
-        input_frame = ttk.Frame(self.window, padding="10")
-        input_frame.pack(fill=tk.X)
-        ttk.Label(input_frame, text="Number of Cylinders:").pack()
+        main_container = ttk.Frame(self.window)
+        main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        input_frame = ttk.LabelFrame(main_container, text="Input Parameters", padding="10")
+        input_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(input_frame, text="Number of Cylinders:").grid(row=0, column=0, sticky=tk.W, pady=5)
         self.cylinders_var = tk.StringVar()
-        self.cylinders_entry = ttk.Entry(input_frame, textvariable=self.cylinders_var)
-        self.cylinders_entry.pack()
-        ttk.Label(input_frame, text="Initial Head Position:").pack()
+        self.cylinders_entry = ttk.Entry(input_frame, textvariable=self.cylinders_var, width=15)
+        self.cylinders_entry.grid(row=0, column=1, sticky=tk.W, pady=5, padx=5)
+        
+        ttk.Label(input_frame, text="Initial Head Position:").grid(row=1, column=0, sticky=tk.W, pady=5)
         self.head_var = tk.StringVar()
-        self.head_entry = ttk.Entry(input_frame, textvariable=self.head_var)
-        self.head_entry.pack()
-        ttk.Label(input_frame, text="Number of Disk Requests:").pack()
+        self.head_entry = ttk.Entry(input_frame, textvariable=self.head_var, width=15)
+        self.head_entry.grid(row=1, column=1, sticky=tk.W, pady=5, padx=5)
+        
+        ttk.Label(input_frame, text="Number of Disk Requests:").grid(row=2, column=0, sticky=tk.W, pady=5)
         self.requests_var = tk.StringVar()
-        self.requests_entry = ttk.Entry(input_frame, textvariable=self.requests_var)
-        self.requests_entry.pack()
+        self.requests_entry = ttk.Entry(input_frame, textvariable=self.requests_var, width=15)
+        self.requests_entry.grid(row=2, column=1, sticky=tk.W, pady=5, padx=5)
+        
         self.confirm_btn = ttk.Button(input_frame, text="Confirm", 
             command=self.on_confirm, state=tk.DISABLED)
-        self.confirm_btn.pack(pady=10)
-        self.request_frame = ttk.Frame(self.window, padding="10")
-        self.request_frame.pack(fill=tk.X)
-        algo_frame = ttk.Frame(self.window, padding="10")
-        algo_frame.pack(fill=tk.X)
+        self.confirm_btn.grid(row=3, column=0, columnspan=2, pady=10)
+        
+        req_container = ttk.LabelFrame(main_container, text="Disk Request Queue", padding="10")
+        req_container.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        
+        self.req_canvas = tk.Canvas(req_container, height=80)
+        scrollbar = ttk.Scrollbar(req_container, orient="horizontal", command=self.req_canvas.xview)
+        self.request_frame = ttk.Frame(self.req_canvas)
+        
+        self.req_canvas.create_window((0, 0), window=self.request_frame, anchor="nw")
+        self.req_canvas.configure(xscrollcommand=scrollbar.set)
+        
+        self.req_canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+        algo_frame = ttk.LabelFrame(main_container, text="Select Algorithm", padding="10")
+        algo_frame.pack(fill=tk.X, pady=(0, 10))
+        
         self.algo_var = tk.StringVar()
-        ttk.Radiobutton(algo_frame, text="FCFS", variable=self.algo_var, 
-            value="FCFS", command=self.update_direction_state).pack()
-        ttk.Radiobutton(algo_frame, text="SSTF", variable=self.algo_var, 
-            value="SSTF", command=self.update_direction_state).pack()
-        ttk.Radiobutton(algo_frame, text="SCAN", variable=self.algo_var, 
-            value="SCAN", command=self.update_direction_state).pack()
-        ttk.Radiobutton(algo_frame, text="C-SCAN", variable=self.algo_var, 
-            value="C-SCAN", command=self.update_direction_state).pack()
-        ttk.Radiobutton(algo_frame, text="LOOK", variable=self.algo_var, 
-            value="LOOK", command=self.update_direction_state).pack()
-        ttk.Radiobutton(algo_frame, text="C-LOOK", variable=self.algo_var, 
-            value="C-LOOK", command=self.update_direction_state).pack()
-        direction_frame = ttk.Frame(self.window, padding="10")
-        direction_frame.pack(fill=tk.X)
+        algo_grid = ttk.Frame(algo_frame)
+        algo_grid.pack(fill=tk.X)
+        
+        ttk.Radiobutton(algo_grid, text="FCFS (First Come First Served)", variable=self.algo_var, 
+            value="FCFS", command=self.update_direction_state).grid(row=0, column=0, sticky=tk.W, pady=2)
+        ttk.Radiobutton(algo_grid, text="SSTF (Shortest Seek Time First)", variable=self.algo_var, 
+            value="SSTF", command=self.update_direction_state).grid(row=1, column=0, sticky=tk.W, pady=2)
+        ttk.Radiobutton(algo_grid, text="SCAN (Elevator)", variable=self.algo_var, 
+            value="SCAN", command=self.update_direction_state).grid(row=2, column=0, sticky=tk.W, pady=2)
+        ttk.Radiobutton(algo_grid, text="C-SCAN (Circular SCAN)", variable=self.algo_var, 
+            value="C-SCAN", command=self.update_direction_state).grid(row=0, column=1, sticky=tk.W, pady=2, padx=20)
+        ttk.Radiobutton(algo_grid, text="LOOK", variable=self.algo_var, 
+            value="LOOK", command=self.update_direction_state).grid(row=1, column=1, sticky=tk.W, pady=2, padx=20)
+        ttk.Radiobutton(algo_grid, text="C-LOOK (Circular LOOK)", variable=self.algo_var, 
+            value="C-LOOK", command=self.update_direction_state).grid(row=2, column=1, sticky=tk.W, pady=2, padx=20)
+        
+        direction_frame = ttk.Frame(algo_frame)
+        direction_frame.pack(fill=tk.X, pady=(10, 0))
+        ttk.Label(direction_frame, text="Direction:").pack(side=tk.LEFT, padx=5)
         self.direction_var = tk.StringVar()
-        self.left_radio = ttk.Radiobutton(direction_frame, text="Left", 
+        self.left_radio = ttk.Radiobutton(direction_frame, text="Left (↓)", 
                                          variable=self.direction_var, value="left", 
-                                         state=tk.DISABLED)
-        self.right_radio = ttk.Radiobutton(direction_frame, text="Right", 
+                                         state=tk.DISABLED, command=self.validate_all)
+        self.right_radio = ttk.Radiobutton(direction_frame, text="Right (↑)", 
                                           variable=self.direction_var, value="right", 
-                                          state=tk.DISABLED)
-        self.left_radio.pack(side=tk.LEFT)
-        self.right_radio.pack(side=tk.LEFT)
-        self.calc_btn = ttk.Button(self.window, text="Calculate", 
+                                          state=tk.DISABLED, command=self.validate_all)
+        self.left_radio.pack(side=tk.LEFT, padx=5)
+        self.right_radio.pack(side=tk.LEFT, padx=5)
+        
+        button_frame = ttk.Frame(main_container)
+        button_frame.pack(fill=tk.X, pady=(0, 10))
+        self.calc_btn = ttk.Button(button_frame, text="Calculate", 
                                  command=self.calculate, state=tk.DISABLED)
-        self.calc_btn.pack(pady=10)
-        nav_frame = ttk.Frame(self.window, padding="10")
-        nav_frame.pack(side=tk.BOTTOM, fill=tk.X)
+        self.calc_btn.pack()
+        
+        nav_frame = ttk.Frame(main_container)
+        nav_frame.pack(fill=tk.X)
         ttk.Button(nav_frame, text="Back", 
                   command=lambda: self.main_app.confirm_exit(self.window)).pack(side=tk.LEFT)
         ttk.Button(nav_frame, text="Home", 
@@ -316,20 +395,28 @@ class DiskSchedulingWindow:
         self.request_entries = []
         requests = int(self.requests_var.get())
         for i in range(requests):
-            entry = ttk.Entry(self.request_frame, width=5)
-            entry.pack(side=tk.LEFT, padx=2)
+            entry = ttk.Entry(self.request_frame, width=6)
+            entry.grid(row=0, column=i, padx=2, pady=5)
             entry.bind('<KeyRelease>', self.validate_requests)
             self.request_entries.append(entry)
+        self.request_frame.update_idletasks()
+        self.req_canvas.configure(scrollregion=self.req_canvas.bbox("all"))
             
     def validate_requests(self, event):
+        if not hasattr(self, 'request_entries'):
+            return
         valid = True
         requests = []
         max_cylinder = int(self.cylinders_var.get()) - 1
         for entry in self.request_entries:
+            value = entry.get().strip()
+            if value == "":
+                valid = False
+                break
             try:
-                value = int(entry.get())
-                if 0 <= value <= max_cylinder:
-                    requests.append(value)
+                val = int(value)
+                if 0 <= val <= max_cylinder:
+                    requests.append(val)
                 else:
                     valid = False
                     break
@@ -339,11 +426,16 @@ class DiskSchedulingWindow:
         self.validate_all()
     
     def validate_all(self):
-        valid_requests = all(entry.get().isdigit() for entry in getattr(self, 'request_entries', []))
+        if not hasattr(self, 'request_entries') or len(self.request_entries) == 0:
+            self.calc_btn.config(state=tk.DISABLED)
+            return
+        
+        valid_requests = all(entry.get().strip().isdigit() for entry in self.request_entries)
         valid_algo = bool(self.algo_var.get())
         valid_direction = True
         if self.algo_var.get() in ["SCAN", "C-SCAN", "LOOK", "C-LOOK"]:
             valid_direction = bool(self.direction_var.get())
+        
         if valid_requests and valid_algo and valid_direction:
             self.calc_btn.config(state=tk.NORMAL)
         else:
