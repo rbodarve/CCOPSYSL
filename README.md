@@ -1,11 +1,11 @@
-# Operating Systems Algorithm Visualizer
+# CCOPSYSL - Operating Systems Class Programs
 
-A comprehensive collection of Operating Systems scheduling and memory management algorithms implemented for educational purposes. This repository contains implementations of disk scheduling, page replacement, and CPU scheduling algorithms with an interactive GUI visualizer.
+Programs and implementations created during the Operating Systems (CCOPSYSL) course. This repository contains practical implementations of fundamental OS algorithms including disk scheduling, page replacement, and CPU scheduling, developed as coursework assignments.
 
 ## Table of Contents
 
 - [About](#about)
-- [Features](#features)
+- [Programs](#programs)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -18,27 +18,37 @@ A comprehensive collection of Operating Systems scheduling and memory management
 - [Project Structure](#project-structure)
 - [Technologies Used](#technologies-used)
 - [Authors](#authors)
-- [License](#license)
+- [Course Information](#course-information)
 - [Acknowledgments](#acknowledgments)
 
 ## About
 
-This project was developed as part of the CCOPSYSL (Operating Systems) course. It provides visual and practical implementations of core operating system algorithms, helping students understand how these algorithms work in real-world scenarios.
+This repository contains programming assignments and projects completed for the CCOPSYSL (Operating Systems) course. The programs demonstrate practical implementations of core operating system algorithms through interactive applications:
 
-The repository includes:
-- A Python-based GUI application for visualizing disk scheduling and page replacement algorithms
-- A Java console application for Round Robin CPU scheduling with detailed performance metrics
+- **Python GUI Application**: Interactive visualizer for disk scheduling and page replacement algorithms
+- **Java Console Application**: Round Robin CPU scheduler with performance analysis
 
-## Features
+These implementations were developed to demonstrate understanding of operating system concepts and algorithm behaviors in practical scenarios.
 
-- Interactive GUI for algorithm visualization
-- Support for multiple disk scheduling algorithms (FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK)
-- Implementation of page replacement algorithms (FIFO, LRU, Optimal)
-- Round Robin CPU scheduling with configurable time quantum
-- Real-time calculation of waiting time and turnaround time
-- Visual representation of algorithm execution
-- Step-by-step algorithm demonstration
-- Performance metrics and statistics
+## Programs
+
+### Python GUI Application
+- **Interactive & Responsive Interface**: Dynamic window sizing adapts to screen resolution
+- **Scrollable Input Areas**: Handle large input sequences with horizontal scrollbars
+- **Disk Scheduling Algorithms**: FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK
+- **Page Replacement Algorithms**: FIFO, LRU, Optimal
+- **Visual Representation**: Real-time charts and graphs showing algorithm execution
+- **Performance Metrics**: Total seek time, page faults, and hit rate calculations
+- **Step-by-Step Display**: Detailed breakdown of each algorithm step
+- **Input Validation**: Comprehensive error checking and user-friendly feedback
+- **Cross-Platform**: Compatible with Windows, macOS, and Linux
+
+### Java Console Application
+- **Round Robin Scheduling**: CPU scheduling with configurable time quantum
+- **Automatic Process Sorting**: Processes sorted by arrival time automatically
+- **Input Validation**: Validates quantum time, process count, arrival/burst times
+- **Performance Calculations**: Average waiting time and turnaround time
+- **Detailed Output**: Process-by-process breakdown with timestamps
 
 ## Prerequisites
 
@@ -107,17 +117,24 @@ python diskSchedPageAlgoOdarve.py
 4. View the visualization and results
 
 **Disk Scheduling Steps:**
-- Enter the initial head position
-- Input the disk queue requests
-- Select an algorithm (FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK)
-- View the head movement visualization and total seek time
+1. Enter the number of cylinders on the disk
+2. Enter the initial head position
+3. Specify the number of disk requests
+4. Input each request value in the scrollable queue
+5. Select an algorithm (FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK)
+6. For SCAN/C-SCAN/LOOK/C-LOOK: Choose head movement direction
+7. View the head movement visualization and total seek time
 
 **Page Replacement Steps:**
-- Specify the number of page frames
-- Enter the length of the reference string
-- Input the page reference sequence
-- Choose an algorithm (FIFO, LRU, Optimal)
-- Analyze page hits, faults, and replacement steps
+1. Specify the number of page frames (memory capacity)
+2. Enter the length of the reference string
+3. Input each page number in the scrollable reference string
+4. Choose an algorithm (FIFO, LRU, Optimal)
+5. View detailed results including:
+   - Step-by-step memory state
+   - Page faults at each step
+   - Total page faults
+   - Hit rate percentage
 
 ### Round Robin CPU Scheduling
 
@@ -129,12 +146,20 @@ java RoundRobin_OdarveRenaire
 ```
 
 **Interactive Prompts:**
-1. Enter the quantum time (time slice)
-2. Specify the number of processes
+1. Enter the quantum time (time slice) - must be positive
+2. Specify the number of processes - must be positive
 3. For each process, input:
-   - Arrival time
-   - Burst time
-4. View the calculated waiting time and turnaround time for each process
+   - Arrival time - must be non-negative
+   - Burst time - must be positive
+4. The program automatically sorts processes by arrival time
+5. View detailed results:
+   - Process-by-process execution table
+   - Wait time for each process
+   - Turnaround time for each process
+   - Average wait time
+   - Average turnaround time
+
+**Note:** The program includes comprehensive input validation and will display error messages for invalid inputs.
 
 ## Algorithms Implemented
 
@@ -164,6 +189,8 @@ CCOPSYSL/
 │
 ├── diskSchedPageAlgoOdarve.py    # Python GUI for disk scheduling and page replacement
 ├── RoundRobin_OdarveRenaire.java # Java implementation of Round Robin scheduling
+├── .vscode/                       # VS Code workspace settings
+├── .gitignore                     # Git ignore file for build artifacts
 └── README.md                      # Project documentation
 ```
 
@@ -176,9 +203,18 @@ CCOPSYSL/
 - **Java**: Implementation of Round Robin algorithm
 - **Git**: Version control
 
-## License
+## Authors
 
-This project is developed for educational purposes as part of the CCOPSYSL course.
+- **Odarve, R.** - Primary Developer (Disk Scheduling & Page Replacement GUI)
+- **Renaire** - Contributor (Round Robin CPU Scheduling)
+
+## Course Information
+
+**Course**: CCOPSYSL (Operating Systems)  
+**Academic Year**: 2025-2026  
+**Purpose**: Programming assignments demonstrating understanding of OS algorithms
+
+These programs were created as coursework to fulfill the requirements of the Operating Systems course, demonstrating practical implementation and understanding of fundamental OS concepts.
 
 ## Acknowledgments
 
