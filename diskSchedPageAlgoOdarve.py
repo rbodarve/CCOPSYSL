@@ -22,7 +22,7 @@ class MainApp:
         self.root.geometry(f"{width}x{height}+{x}+{y}")
         self.root.resizable(True, True)
         self.root.overrideredirect(False)
-        self.root.attributes('-toolwindow', True)  # Removes minimize/maximize buttons
+        self.root.attributes('-toolwindow', True)
         
     def create_main_buttons(self):
         frame = ttk.Frame(self.root, padding="20")
@@ -240,6 +240,10 @@ class DiskSchedulingWindow:
         self.cylinders_var = tk.StringVar()
         self.cylinders_entry = ttk.Entry(input_frame, textvariable=self.cylinders_var)
         self.cylinders_entry.pack()
+        ttk.Label(input_frame, text="Initial Head Position:").pack()
+        self.head_var = tk.StringVar()
+        self.head_entry = ttk.Entry(input_frame, textvariable=self.head_var)
+        self.head_entry.pack()
         ttk.Label(input_frame, text="Number of Disk Requests:").pack()
         self.requests_var = tk.StringVar()
         self.requests_entry = ttk.Entry(input_frame, textvariable=self.requests_var)
@@ -260,6 +264,10 @@ class DiskSchedulingWindow:
             value="SCAN", command=self.update_direction_state).pack()
         ttk.Radiobutton(algo_frame, text="C-SCAN", variable=self.algo_var, 
             value="C-SCAN", command=self.update_direction_state).pack()
+        ttk.Radiobutton(algo_frame, text="LOOK", variable=self.algo_var, 
+            value="LOOK", command=self.update_direction_state).pack()
+        ttk.Radiobutton(algo_frame, text="C-LOOK", variable=self.algo_var, 
+            value="C-LOOK", command=self.update_direction_state).pack()
         direction_frame = ttk.Frame(self.window, padding="10")
         direction_frame.pack(fill=tk.X)
         self.direction_var = tk.StringVar()
@@ -281,13 +289,15 @@ class DiskSchedulingWindow:
         ttk.Button(nav_frame, text="Home", 
                   command=lambda: self.main_app.confirm_exit(self.window)).pack(side=tk.LEFT)
         self.cylinders_var.trace('w', self.validate_inputs)
+        self.head_var.trace('w', self.validate_inputs)
         self.requests_var.trace('w', self.validate_inputs)
         
     def validate_inputs(self, *args):
         try:
             cylinders = int(self.cylinders_var.get())
+            head = int(self.head_var.get())
             requests = int(self.requests_var.get())
-            if cylinders > 0 and requests > 0:
+            if cylinders > 0 and 0 <= head < cylinders and requests > 0:
                 self.confirm_btn.config(state=tk.NORMAL)
             else:
                 self.confirm_btn.config(state=tk.DISABLED)
@@ -295,7 +305,7 @@ class DiskSchedulingWindow:
             self.confirm_btn.config(state=tk.DISABLED)
             
     def update_direction_state(self):
-        if self.algo_var.get() == "SCAN":
+        if self.algo_var.get() in ["SCAN", "C-SCAN", "LOOK", "C-LOOK"]:
             self.left_radio.config(state=tk.NORMAL)
             self.right_radio.config(state=tk.NORMAL)
         else:
@@ -304,7 +314,6 @@ class DiskSchedulingWindow:
         self.validate_all()
             
     def on_confirm(self):
-        # Clear existing request boxes
         for widget in self.request_frame.winfo_children():
             widget.destroy()
         self.request_entries = []
@@ -336,7 +345,7 @@ class DiskSchedulingWindow:
         valid_requests = all(entry.get().isdigit() for entry in getattr(self, 'request_entries', []))
         valid_algo = bool(self.algo_var.get())
         valid_direction = True
-        if self.algo_var.get() == "SCAN":
+        if self.algo_var.get() in ["SCAN", "C-SCAN", "LOOK", "C-LOOK"]:
             valid_direction = bool(self.direction_var.get())
         if valid_requests and valid_algo and valid_direction:
             self.calc_btn.config(state=tk.NORMAL)
@@ -345,21 +354,21 @@ class DiskSchedulingWindow:
 
     def calculate(self):
         cylinders = int(self.cylinders_var.get())
+        initial_head = int(self.head_var.get())
         requests = [int(entry.get()) for entry in self.request_entries]
         algorithm = self.algo_var.get()
-        direction = self.direction_var.get() if algorithm == "SCAN" else None
+        direction = self.direction_var.get() if algorithm in ["SCAN", "C-SCAN", "LOOK", "C-LOOK"] else None
         result_window = tk.Toplevel(self.window)
         result_window.title(f"{algorithm} Disk Scheduling Results")
         result_window.geometry("800x600")
         fig, ax = plt.subplots(figsize=(10, 6))
-        current_pos = requests[0]
-        sequence = []
+        sequence = [initial_head]
         total_seek_time = 0
         if algorithm == "FCFS":
-            sequence = requests.copy()
+            sequence.extend(requests)
         elif algorithm == "SSTF":
             remaining = requests.copy()
-            current = current_pos
+            current = initial_head
             while remaining:
                 next_request = min(remaining, key=lambda x: abs(x - current))
                 sequence.append(next_request)
@@ -367,39 +376,74 @@ class DiskSchedulingWindow:
                 remaining.remove(next_request)
         elif algorithm == "SCAN":
             remaining = sorted(requests)
-            current = current_pos
-            sequence = []
             if direction == "right":
                 for req in remaining:
-                    if req >= current:
+                    if req >= initial_head:
                         sequence.append(req)
-                if not sequence or sequence[-1] != cylinders - 1:
-                    sequence.append(cylinders - 1)
+                sequence.append(cylinders - 1)
                 for req in reversed(remaining):
-                    if req < current:
+                    if req < initial_head:
                         sequence.append(req)
-            else:  
+            else:
                 for req in reversed(remaining):
-                    if req <= current:
+                    if req <= initial_head:
                         sequence.append(req)
-                if not sequence or sequence[-1] != 0:
-                    sequence.append(0)
+                sequence.append(0)
                 for req in remaining:
-                    if req > current:
+                    if req > initial_head:
                         sequence.append(req)
         elif algorithm == "C-SCAN":
             remaining = sorted(requests)
-            current = current_pos
-            sequence = []
-            for req in remaining:
-                if req >= current:
-                    sequence.append(req)
-            if not sequence or sequence[-1] != cylinders - 1:
+            if direction == "right":
+                for req in remaining:
+                    if req >= initial_head:
+                        sequence.append(req)
                 sequence.append(cylinders - 1)
-            sequence.append(0)
-            for req in remaining:
-                if req < current:
-                    sequence.append(req)
+                sequence.append(0)
+                for req in remaining:
+                    if req < initial_head:
+                        sequence.append(req)
+            else:
+                for req in reversed(remaining):
+                    if req <= initial_head:
+                        sequence.append(req)
+                sequence.append(0)
+                sequence.append(cylinders - 1)
+                for req in reversed(remaining):
+                    if req > initial_head:
+                        sequence.append(req)
+        elif algorithm == "LOOK":
+            remaining = sorted(requests)
+            if direction == "right":
+                for req in remaining:
+                    if req >= initial_head:
+                        sequence.append(req)
+                for req in reversed(remaining):
+                    if req < initial_head:
+                        sequence.append(req)
+            else:
+                for req in reversed(remaining):
+                    if req <= initial_head:
+                        sequence.append(req)
+                for req in remaining:
+                    if req > initial_head:
+                        sequence.append(req)
+        elif algorithm == "C-LOOK":
+            remaining = sorted(requests)
+            if direction == "right":
+                for req in remaining:
+                    if req >= initial_head:
+                        sequence.append(req)
+                for req in remaining:
+                    if req < initial_head:
+                        sequence.append(req)
+            else:
+                for req in reversed(remaining):
+                    if req <= initial_head:
+                        sequence.append(req)
+                for req in reversed(remaining):
+                    if req > initial_head:
+                        sequence.append(req)
         for i in range(len(sequence)-1):
             total_seek_time += abs(sequence[i+1] - sequence[i])
         points_y = range(len(sequence))

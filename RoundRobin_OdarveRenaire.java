@@ -2,14 +2,23 @@ import java.util.*;
 
 public class RoundRobin_OdarveRenaire{
 	private static Scanner inp = new Scanner(System.in);
-	//Driver Code
+	private static int maxProcessIndex = 0;
+	
 	public static void main(String[] args){
-		int n,tq, timer = 0, maxProccessIndex = 0;
+		int n, tq, timer = 0;
 		float avgWait = 0, avgTT = 0;
 		System.out.print("Enter the quantum time : ");
 		tq = inp.nextInt();
+		if(tq <= 0){
+			System.out.println("Error: Quantum time must be positive!");
+			return;
+		}
 		System.out.print("Enter the number of processes : ");
 		n = inp.nextInt();
+		if(n <= 0){
+			System.out.println("Error: Number of processes must be positive!");
+			return;
+		}
 		int arrival[] = new int[n];
 		int burst[] = new int[n];
 		int wait[] = new int[n];
@@ -19,18 +28,43 @@ public class RoundRobin_OdarveRenaire{
 		boolean complete[] = new boolean[n];
 
 		for(int i = 0; i < n; i++){
-			System.out.print("Enter the arrival time of the processes "+ (i+1) +": ");
+			System.out.print("Enter the arrival time of the process "+ (i+1) +": ");
 			arrival[i] = inp.nextInt();
+			if(arrival[i] < 0){
+				System.out.println("Error: Arrival time cannot be negative!");
+				return;
+			}
 			System.out.print("Enter the burst time of the process "+ (i+1) +": ");
 			burst[i] = inp.nextInt();
+			if(burst[i] <= 0){
+				System.out.println("Error: Burst time must be positive!");
+				return;
+			}
 			temp_burst[i] = burst[i];			
 		}
+		
+		// Sort processes by arrival time
+		for(int i = 0; i < n - 1; i++){
+			for(int j = 0; j < n - i - 1; j++){
+				if(arrival[j] > arrival[j + 1]){
+					int temp = arrival[j];
+					arrival[j] = arrival[j + 1];
+					arrival[j + 1] = temp;
+					temp = burst[j];
+					burst[j] = burst[j + 1];
+					burst[j + 1] = temp;
+					temp = temp_burst[j];
+					temp_burst[j] = temp_burst[j + 1];
+					temp_burst[j + 1] = temp;
+				}
+			}
+		}
 
-		for(int i = 0; i < n; i++){ //Initializing the queue and complete array
+		for(int i = 0; i < n; i++){
 			complete[i] = false;
 			queue[i] = 0;
 		}
-		while(timer < arrival[0]) //Incrementing Timer until the first process arrives
+		while(timer < arrival[0])
 			timer++; 
 		queue[0] = 1;
 		
@@ -51,16 +85,13 @@ public class RoundRobin_OdarveRenaire{
 					temp_burst[queue[0]-1] -= 1;
 					timer += 1;
 					ctr++;
-
-					//Updating the ready queue until all the processes arrive
-					checkNewArrival(timer, arrival, n, maxProccessIndex, queue);
+					checkNewArrival(timer, arrival, n, queue);
 				}
 				if((temp_burst[queue[0]-1] == 0) && (complete[queue[0]-1] == false)){
-					turn[queue[0]-1] = timer;	 //turn currently stores exit times
+					turn[queue[0]-1] = timer;
 					complete[queue[0]-1] = true;
 				}
 				
-				//checks whether or not CPU is idle
 				boolean idle = true;
 				if(queue[n-1] == 0){
 					for(int k = 0; k < n && queue[k] != 0; k++){
@@ -74,10 +105,9 @@ public class RoundRobin_OdarveRenaire{
 
 				if(idle){
 					timer++;
-					checkNewArrival(timer, arrival, n, maxProccessIndex, queue);
+					checkNewArrival(timer, arrival, n, queue);
 				}
 			
-				//Maintaining the entries of processes after each premption in the ready Queue
 				queueMaintainence(queue,n);
 			}
 		}
@@ -100,7 +130,7 @@ public class RoundRobin_OdarveRenaire{
 		System.out.print("\nAverage Wait time : "+(avgWait/n)
 						+"\nAverage Turn Around Time : "+(avgTT/n));
 	}
-	public static void queueUpdation(int queue[],int timer,int arrival[],int n, int maxProccessIndex){
+	public static void queueUpdation(int queue[],int timer,int arrival[],int n){
 		int zeroIndex = -1;
 		for(int i = 0; i < n; i++){
 			if(queue[i] == 0){
@@ -110,22 +140,22 @@ public class RoundRobin_OdarveRenaire{
 		}
 		if(zeroIndex == -1)
 			return;
-		queue[zeroIndex] = maxProccessIndex + 1;
+		queue[zeroIndex] = maxProcessIndex + 1;
 	}
 
-	public static void checkNewArrival(int timer, int arrival[], int n, int maxProccessIndex,int queue[]){
+	public static void checkNewArrival(int timer, int arrival[], int n, int queue[]){
 		if(timer <= arrival[n-1]){
 			boolean newArrival = false;
-			for(int j = (maxProccessIndex+1); j < n; j++){
+			for(int j = (maxProcessIndex+1); j < n; j++){
 				if(arrival[j] <= timer){
-					if(maxProccessIndex < j){
-						maxProccessIndex = j;
+					if(maxProcessIndex < j){
+						maxProcessIndex = j;
 						newArrival = true;
 					}
 				}
 			}
-			if(newArrival) //adds the index of the arriving process(if any)
-				queueUpdation(queue,timer,arrival,n, maxProccessIndex);	 
+			if(newArrival)
+				queueUpdation(queue,timer,arrival,n);
 		}
 	}
 
