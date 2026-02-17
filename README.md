@@ -53,13 +53,13 @@ These implementations were developed to demonstrate understanding of operating s
 Before running this project, ensure you have the following installed:
 
 **For Python GUI Application:**
-- Python 3.x
+- Python 3.13.9
 - tkinter (usually comes pre-installed with Python)
 - matplotlib
 - numpy
 
 **For Java Application:**
-- Java Development Kit (JDK) 8 or higher
+- Java Development Kit (JDK) 21.0.10 (OpenJDK)
 
 ## Installation
 
@@ -194,12 +194,12 @@ CCOPSYSL/
 
 ## Technologies Used
 
-- **Python 3.x**: Primary language for GUI application
+- **Python 3.13.9**: Primary language for GUI application
   - tkinter: GUI framework
   - matplotlib: Data visualization
   - numpy: Numerical computations
-- **Java**: Implementation of Round Robin algorithm
-- **Git**: Version control
+- **Java (OpenJDK 21.0.10)**: Implementation of Round Robin algorithm
+- **Git 2.34.1**: Version control
 
 ## Acknowledgments
 
