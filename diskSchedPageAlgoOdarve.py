@@ -2,8 +2,6 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from typing import List, Optional
-import numpy as np
 
 class MainApp:
     def __init__(self):
@@ -159,7 +157,7 @@ class PageReplacementWindow:
             if value == "":
                 valid = False
                 break
-            if value.isdigit() and 0 <= int(value) <= 9:
+            if value.isdigit():
                 ref_string.append(int(value))
             else:
                 valid = False
@@ -403,34 +401,29 @@ class DiskSchedulingWindow:
         self.req_canvas.configure(scrollregion=self.req_canvas.bbox("all"))
             
     def validate_requests(self, event):
-        if not hasattr(self, 'request_entries'):
-            return
-        valid = True
-        requests = []
-        max_cylinder = int(self.cylinders_var.get()) - 1
-        for entry in self.request_entries:
-            value = entry.get().strip()
-            if value == "":
-                valid = False
-                break
-            try:
-                val = int(value)
-                if 0 <= val <= max_cylinder:
-                    requests.append(val)
-                else:
-                    valid = False
-                    break
-            except ValueError:
-                valid = False
-                break
         self.validate_all()
-    
+
     def validate_all(self):
         if not hasattr(self, 'request_entries') or len(self.request_entries) == 0:
             self.calc_btn.config(state=tk.DISABLED)
             return
-        
-        valid_requests = all(entry.get().strip().isdigit() for entry in self.request_entries)
+
+        try:
+            cylinders = int(self.cylinders_var.get())
+            head = int(self.head_var.get())
+        except ValueError:
+            self.calc_btn.config(state=tk.DISABLED)
+            return
+        if not (cylinders > 0 and 0 <= head < cylinders):
+            self.calc_btn.config(state=tk.DISABLED)
+            return
+        max_cylinder = cylinders - 1
+        valid_requests = True
+        for entry in self.request_entries:
+            value = entry.get().strip()
+            if not value.isdigit() or not (0 <= int(value) <= max_cylinder):
+                valid_requests = False
+                break
         valid_algo = bool(self.algo_var.get())
         valid_direction = True
         if self.algo_var.get() in ["SCAN", "C-SCAN", "LOOK", "C-LOOK"]:
@@ -548,6 +541,8 @@ class DiskSchedulingWindow:
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         ttk.Label(result_window, text=f"Total Seek Time: {total_seek_time} cylinders").pack(pady=5)
+        result_window.protocol("WM_DELETE_WINDOW",
+            lambda: (plt.close(fig), result_window.destroy()))
 
 def main():
     app = MainApp()

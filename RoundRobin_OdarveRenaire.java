@@ -8,13 +8,13 @@ public class RoundRobin_OdarveRenaire{
 		int n, tq, timer = 0;
 		float avgWait = 0, avgTT = 0;
 		System.out.print("Enter the quantum time : ");
-		tq = inp.nextInt();
+		tq = nextInt();
 		if(tq <= 0){
 			System.out.println("Error: Quantum time must be positive!");
 			return;
 		}
 		System.out.print("Enter the number of processes : ");
-		n = inp.nextInt();
+		n = nextInt();
 		if(n <= 0){
 			System.out.println("Error: Number of processes must be positive!");
 			return;
@@ -29,13 +29,13 @@ public class RoundRobin_OdarveRenaire{
 
 		for(int i = 0; i < n; i++){
 			System.out.print("Enter the arrival time of the process "+ (i+1) +": ");
-			arrival[i] = inp.nextInt();
+			arrival[i] = nextInt();
 			if(arrival[i] < 0){
 				System.out.println("Error: Arrival time cannot be negative!");
 				return;
 			}
 			System.out.print("Enter the burst time of the process "+ (i+1) +": ");
-			burst[i] = inp.nextInt();
+			burst[i] = nextInt();
 			if(burst[i] <= 0){
 				System.out.println("Error: Burst time must be positive!");
 				return;
@@ -130,32 +130,41 @@ public class RoundRobin_OdarveRenaire{
 		System.out.print("\nAverage Wait time : "+(avgWait/n)
 						+"\nAverage Turn Around Time : "+(avgTT/n));
 	}
-	public static void queueUpdation(int queue[],int timer,int arrival[],int n){
-		int zeroIndex = -1;
+	// Reads an integer, exiting with a friendly message instead of an
+	// uncaught exception when the input is not an integer (InputMismatchException)
+	// or the stream ends prematurely (NoSuchElementException).
+	public static int nextInt(){
+		try{
+			return inp.nextInt();
+		}
+		catch(NoSuchElementException e){
+			System.out.println("Error: Invalid or missing input!");
+			System.exit(0);
+			return -1; // unreachable
+		}
+	}
+
+	public static void queueUpdation(int queue[], int processNumber, int n){
 		for(int i = 0; i < n; i++){
 			if(queue[i] == 0){
-				zeroIndex = i;
-				break;
+				queue[i] = processNumber;
+				return;
 			}
 		}
-		if(zeroIndex == -1)
-			return;
-		queue[zeroIndex] = maxProcessIndex + 1;
 	}
 
 	public static void checkNewArrival(int timer, int arrival[], int n, int queue[]){
-		if(timer <= arrival[n-1]){
-			boolean newArrival = false;
-			for(int j = (maxProcessIndex+1); j < n; j++){
-				if(arrival[j] <= timer){
-					if(maxProcessIndex < j){
-						maxProcessIndex = j;
-						newArrival = true;
-					}
-				}
+		// Enqueue every process that has now arrived. Arrivals are sorted, so
+		// stop at the first process that has not arrived yet. Handling each one
+		// individually is what lets processes sharing an arrival time all enter
+		// the queue instead of only the last of them.
+		for(int j = maxProcessIndex + 1; j < n; j++){
+			if(arrival[j] <= timer){
+				maxProcessIndex = j;
+				queueUpdation(queue, j + 1, n);
 			}
-			if(newArrival)
-				queueUpdation(queue,timer,arrival,n);
+			else
+				break;
 		}
 	}
 

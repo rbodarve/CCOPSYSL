@@ -56,7 +56,6 @@ Before running this project, ensure you have the following installed:
 - Python 3.13.9
 - tkinter (usually comes pre-installed with Python)
 - matplotlib
-- numpy
 
 **For Java Application:**
 - Java Development Kit (JDK) 21.0.10 (OpenJDK)
@@ -75,7 +74,7 @@ cd CCOPSYSL
 Install the required Python packages:
 
 ```bash
-pip install matplotlib numpy
+pip install matplotlib
 ```
 
 Note: tkinter is typically included with Python installations. If not available, install it using your system's package manager:
@@ -116,9 +115,9 @@ python diskSchedPageAlgoOdarve.py
 
 **Disk Scheduling Steps:**
 1. Enter the number of cylinders on the disk
-2. Enter the initial head position
+2. Enter the initial head position (0 to cylinders − 1)
 3. Specify the number of disk requests
-4. Input each request value in the scrollable queue
+4. Input each request value (0 to cylinders − 1) in the scrollable queue
 5. Select an algorithm (FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK)
 6. For SCAN/C-SCAN/LOOK/C-LOOK: Choose head movement direction
 7. View the head movement visualization and total seek time
@@ -126,7 +125,7 @@ python diskSchedPageAlgoOdarve.py
 **Page Replacement Steps:**
 1. Specify the number of page frames (memory capacity)
 2. Enter the length of the reference string
-3. Input each page number in the scrollable reference string
+3. Input each page number (non-negative integer) in the scrollable reference string
 4. Choose an algorithm (FIFO, LRU, Optimal)
 5. View detailed results including:
    - Step-by-step memory state
@@ -157,7 +156,7 @@ java RoundRobin_OdarveRenaire
    - Average wait time
    - Average turnaround time
 
-**Note:** The program includes comprehensive input validation and will display error messages for invalid inputs.
+**Note:** The program includes comprehensive input validation and will display a clear error message for invalid inputs, including non-numeric or missing values, instead of crashing.
 
 ## Algorithms Implemented
 
@@ -197,7 +196,6 @@ CCOPSYSL/
 - **Python 3.13.9**: Primary language for GUI application
   - tkinter: GUI framework
   - matplotlib: Data visualization
-  - numpy: Numerical computations
 - **Java (OpenJDK 21.0.10)**: Implementation of Round Robin algorithm
 - **Git 2.34.1**: Version control
 
